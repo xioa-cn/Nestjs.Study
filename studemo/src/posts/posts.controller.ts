@@ -1,21 +1,26 @@
 import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
 import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {CreatePostDto} from "../models/createPostDto";
+import {PostsService} from "./posts.service";
 
 // nest g co posts
 @Controller('posts')
 @ApiTags('NormalPosts') // Swagger 中控制器标签
 export class PostsController {
+    constructor(private readonly postService: PostsService) {
+    }
+
+
     @Get('posts')
     @ApiOperation({summary: '显示列表'})
-    posts() {
-        return "normal-text";
+    async posts() {
+        return await this.postService.findAll();
     }
 
     @Post()
     @ApiOperation({summary: '创建'})
-    create(@Body() dto: CreatePostDto) {
-        return dto;
+    async create(@Body() dto: CreatePostDto) {
+        return await this.postService.create(dto);
     }
 
     @Get(':id')
