@@ -11,7 +11,8 @@ import {TypeOrmModule} from '@nestjs/typeorm'
             password: '123456',
             database: 'nestjs_demo',
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: true, // 开发环境使用，生产环境建议关闭
+            synchronize: true, 
+            // 自动创建更新表结构  开发环境使用，生产环境建议关闭
         })
     ],
 })
