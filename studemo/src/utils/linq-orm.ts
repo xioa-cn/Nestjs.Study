@@ -189,7 +189,8 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
     whereLike<K extends keyof T>(property: K, value: string, options?: {
         startsWith?: boolean;
         endsWith?: boolean
-    }): ILinqQuery<T> {
+    })
+        : ILinqQuery<T> {
         const paramName = `p_${String(property)}`;
         let formattedValue = value;
 
