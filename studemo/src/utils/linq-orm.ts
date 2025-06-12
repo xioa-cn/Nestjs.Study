@@ -444,9 +444,7 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
         }
     }
 
-    async first()
-        :
-        Promise<T | null> {
+    async first(): Promise<T | null> {
         this.applyConditions();
         try {
             return await this.queryBuilder.getOne();
@@ -498,9 +496,7 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
     }
 
     // 应用所有条件到查询构建器
-    private
-
-    applyConditions(): void {
+    private applyConditions(): void {
         // 重置查询构建器
         this.queryBuilder = this.queryBuilder.clone();
 
@@ -557,23 +553,15 @@ export interface ILinqRepository<T extends ObjectLiteral>
 }
 
 // 使用类继承实现 LINQ 风格的 Repository
-export class LinqRepository<T extends ObjectLiteral>
-
-    extends Repository<T>
-
-    implements ILinqRepository<T> {
-    linq()
-        :
-        ILinqQuery<T> {
+export class LinqRepository<T extends ObjectLiteral> extends Repository<T> implements ILinqRepository<T> {
+    linq(): ILinqQuery<T> {
         return new LinqQueryBuilder<T>(this);
     }
 }
 
 
 // 为模块提供的工厂函数
-export function
-
-createLinqRepository<T extends ObjectLiteral>(
+export function createLinqRepository<T extends ObjectLiteral>(
     repository: Repository<T>
 ): ILinqRepository<T> {
     return Object.assign(repository, {
