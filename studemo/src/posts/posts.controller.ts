@@ -2,6 +2,7 @@ import {Body, Controller, Delete, Get, Param, Post, Put} from '@nestjs/common';
 import {ApiOperation, ApiTags} from '@nestjs/swagger';
 import {CreatePostDto} from "../models/createPostDto";
 import {PostsService} from "./posts.service";
+import {RawResponse} from "../utils/RawResponse"
 
 // nest g co posts
 @Controller('posts')
@@ -41,6 +42,7 @@ export class PostsController {
         }
     }
 
+    @RawResponse()
     @Delete(':id')
     @ApiOperation({summary: '删除'})
     remover(@Param('id') id: string) {
