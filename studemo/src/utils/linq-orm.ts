@@ -2,27 +2,19 @@ import {
     SelectQueryBuilder,
     Repository,
     ObjectLiteral,
-    EntityTarget,
-    Connection,
-    EntityManager,
-    QueryRunner
 } from 'typeorm';
-import {ConsoleLogger} from "@nestjs/common";
 
-// 查询条件类型
 interface Condition {
     type: 'where' | 'andWhere' | 'orWhere';
     condition: string;
     parameters: Record<string, any>;
 }
 
-// 查询排序类型
 interface OrderBy {
     property: string;
     direction: 'ASC' | 'DESC';
 }
 
-// 查询构建器接口
 export interface ILinqQuery<T extends ObjectLiteral> {
     where(condition: (entity: T) => boolean): ILinqQuery<T>;
 
@@ -70,21 +62,17 @@ export interface ILinqQuery<T extends ObjectLiteral> {
     toFindOptions(): any;
 }
 
-// 创建一个查询上下文类
 class QueryContext<T> {
     private variables: Record<string, any> = {};
-
-    // 设置变量值
+    
     setVariable(name: string, value: any): void {
         this.variables[name] = value;
     }
-
-    // 获取变量值
+    
     getVariable(name: string): any {
         return this.variables[name];
     }
-
-    // 创建条件函数
+    
     createCondition(condition: (entity: T) => boolean): (entity: T) => boolean {
         // 捕获当前上下文
         const context = this;
@@ -114,7 +102,6 @@ class QueryContext<T> {
     }
 }
 
-// 修改 LinqQueryBuilder
 export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> {
     private queryBuilder: SelectQueryBuilder<T>;
     private alias: string;
@@ -129,30 +116,26 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
         this.queryBuilder = repository.createQueryBuilder(alias);
         this.alias = alias;
     }
-
-    // 修改 where 方法
+    
     where(condition: (entity: T) => boolean): ILinqQuery<T> {
         // 解析条件函数
         const {condition: sqlCondition, parameters} = this.parseCondition(condition);
         this.conditions.push({type: 'where', condition: sqlCondition, parameters});
         return this;
     }
-
-    // 增加 andWhere 方法
+    
     andWhere(condition: (entity: T) => boolean): ILinqQuery<T> {
         const {condition: sqlCondition, parameters} = this.parseCondition(condition);
         this.conditions.push({type: 'andWhere', condition: sqlCondition, parameters});
         return this;
     }
-
-    // 增加 orWhere 方法
+    
     orWhere(condition: (entity: T) => boolean): ILinqQuery<T> {
         const {condition: sqlCondition, parameters} = this.parseCondition(condition);
         this.conditions.push({type: 'orWhere', condition: sqlCondition, parameters});
         return this;
     }
-
-    // 简化条件方法
+    
     whereEq<K extends keyof T>(property: K, value: T[K]): ILinqQuery<T> {
         const paramName = `p_${String(property)}`;
         this.conditions.push({
@@ -248,20 +231,17 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
         });
         return this;
     }
-
-    // 增加设置变量的方法
+    
     withVariable(name: string, value: any): ILinqQuery<T> {
         this.context.setVariable(name, value);
         return this;
     }
-
-    // 排序方法
+    
     orderBy<K extends keyof T>(property: K, direction: 'ASC' | 'DESC'): ILinqQuery<T> {
         this.orderByClauses.push({property: String(property), direction});
         return this;
     }
-
-    // 分页方法
+    
     skip(take: number): ILinqQuery<T> {
         this.skipValue = take;
         return this;
@@ -271,14 +251,12 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
         this.takeValue = limit;
         return this;
     }
-
-    // 关联查询
+    
     include<K extends keyof T>(relation: K): ILinqQuery<T> {
         this.relations.push(String(relation));
         return this;
     }
-
-    // 修改 parseCondition 方法
+    
     private parseCondition(condition: (entity: T) => boolean): { condition: string, parameters: any } {
         try {
             const conditionStr = condition.toString();
@@ -430,8 +408,7 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
             parameters: {}
         };
     }
-
-    // 执行查询
+    
     async toArray(): Promise<T[]> {
         // 应用所有条件到查询构建器
         this.applyConditions();
@@ -463,14 +440,11 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
             throw error;
         }
     }
-
-    // 转换为 TypeORM 的 FindOptions
+    
     toFindOptions(): any {
         const where: any = {};
 
         this.conditions.forEach(condition => {
-            // 这里简化处理，实际应用中可能需要更复杂的逻辑
-            // 仅作为示例，实际使用可能需要调整
             const match = condition.condition.match(/(\w+)\.(\w+)\s*=\s*:\w+/);
             if (match && match.length === 3) {
                 const [, alias, property] = match;
@@ -494,8 +468,7 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
             relations: this.relations
         };
     }
-
-    // 应用所有条件到查询构建器
+    
     private applyConditions(): void {
         // 重置查询构建器
         this.queryBuilder = this.queryBuilder.clone();
@@ -543,7 +516,6 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
     }
 }
 
-// 定义 LINQ 风格的 Repository 接口
 export interface ILinqRepository<T extends ObjectLiteral>
 
     extends Repository<T> {
@@ -552,15 +524,12 @@ export interface ILinqRepository<T extends ObjectLiteral>
         ILinqQuery<T>;
 }
 
-// 使用类继承实现 LINQ 风格的 Repository
 export class LinqRepository<T extends ObjectLiteral> extends Repository<T> implements ILinqRepository<T> {
     linq(): ILinqQuery<T> {
         return new LinqQueryBuilder<T>(this);
     }
 }
 
-
-// 为模块提供的工厂函数
 export function createLinqRepository<T extends ObjectLiteral>(
     repository: Repository<T>
 ): ILinqRepository<T> {
