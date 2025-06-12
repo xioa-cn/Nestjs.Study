@@ -1,15 +1,19 @@
-import {Injectable, NestInterceptor, ExecutionContext, CallHandler} from '@nestjs/common';
+import {CallHandler, ExecutionContext, Injectable, NestInterceptor} from '@nestjs/common';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {RequestResult, ResponseUtil} from "./requestResult";
 import {Reflector} from "@nestjs/core";
-import {isObject} from "class-validator";
+import {isArray, isObject} from "class-validator";
 import {RawResponse} from "./RawResponse";
+
 function isRequestResult<T>(data: any): data is RequestResult<T> {
-    return isObject(data) &&
+    return isObject(data) && !isArray(data) &&
         'state' in data &&
+        'time' in data &&
         'message' in data &&
+        'success' in data &&
         'data' in data;
+        
 }
 // 拦截器
 @Injectable()
@@ -34,8 +38,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, RequestResult<
                 if (
                     // 已经是统一格式的响应
                     isRequestResult(data) ||
-                    // 非对象类型（如字符串、数字等）
-                    !isObject(data) ||
+                   
                     // 流数据
                     data instanceof Buffer ||
                     // 重定向响应

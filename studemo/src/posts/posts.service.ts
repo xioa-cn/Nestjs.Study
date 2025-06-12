@@ -4,15 +4,58 @@ import {Repository} from "typeorm";
 import {Injectable} from "@nestjs/common";
 import {CreatePostDto} from "../models/createPostDto";
 import {RequestResult, ResponseUtil} from "../utils/requestResult";
+import {createLinqRepository, ILinqRepository} from "../utils/linq-orm";
 
 @Injectable()
 export class PostsService {
-    constructor(@InjectRepository(Posts) private postsRepository: Repository<Posts>) {
+    private postsRepository: ILinqRepository<Posts>;
+
+    constructor(
+        @InjectRepository(Posts)
+        private readonly baseRepository: Repository<Posts>
+    ) {
+        this.postsRepository = createLinqRepository(baseRepository);
     }
 
     async findAll(): Promise<RequestResult<Posts[]>> {
         return ResponseUtil.requestResultSuccess(await this.postsRepository.find());
     }
+
+    async findTitle(title: string) {
+        return this.postsRepository.linq().withVariable('title', title)
+            .where(item => item.title === title)
+            .toArray();
+    }
+
+    async findInfoByID(id: number) {
+        return this.postsRepository.linq().withVariable('id', id)
+            .where(item => item.id === id)
+            .toArray();
+    }
+
+    async findInfoLargeById(id: number) {
+        return this.postsRepository.linq()
+            .withVariable('id', id)
+            .where(item => item.id >= id)
+            .toArray();
+    }
+
+    async findInfoSmallById(id: number) {
+        return this.postsRepository.linq()
+            .withVariable('id', id)
+            .where(item => item.id < id)
+            .toArray();
+    }
+    
+    async findInfo(sid:number,lid:number){
+        return this.postsRepository.linq()
+            .withVariable('sid',sid)
+            .withVariable('lid',lid)
+            .where(item => item.id>= sid)
+            .andWhere(item=> item.id <= lid)
+            .toArray();
+    }
+
 
     async create(dto: CreatePostDto): Promise<RequestResult<boolean>> {
         const post = new Posts();
