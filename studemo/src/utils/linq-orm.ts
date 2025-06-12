@@ -277,9 +277,7 @@ export class LinqQueryBuilder<T extends ObjectLiteral> implements ILinqQuery<T> 
                     }
                 }
             }
-            console.log(this.context);
-
-            // 更强大的正则表达式，支持多种条件格式
+            
             const regex = /(?:entity|item)\.(\w+)\s*([=!><]+|(?:not\s+)?in|like|is\s+(?:not\s+)?null)\s*([^;)}]*)/i;
             const match = conditionStr.match(regex);
 
