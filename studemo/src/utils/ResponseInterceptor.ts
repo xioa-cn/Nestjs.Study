@@ -5,7 +5,12 @@ import {RequestResult, ResponseUtil} from "./requestResult";
 import {Reflector} from "@nestjs/core";
 import {isObject} from "class-validator";
 import {RawResponse} from "./RawResponse";
-
+function isRequestResult<T>(data: any): data is RequestResult<T> {
+    return isObject(data) &&
+        'state' in data &&
+        'message' in data &&
+        'data' in data;
+}
 // 拦截器
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, RequestResult<T> | T> {
@@ -28,7 +33,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, RequestResult<
                 // 特殊情况处理：已经是统一格式的响应、非对象类型、流数据等
                 if (
                     // 已经是统一格式的响应
-                    (isObject(data) && 'code' in data && 'message' in data && 'data' in data) ||
+                    isRequestResult(data) ||
                     // 非对象类型（如字符串、数字等）
                     !isObject(data) ||
                     // 流数据
