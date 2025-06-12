@@ -13,5 +13,9 @@ export class SettingsService {
     getApiKey(): string {
         return this.configService.get<string>("API_KEY", "default-api-key")
     }
+    
+    getKeyValue<T>(key:string): T | undefined{
+        return this.configService.get<T>(key);
+    }
 
 }
